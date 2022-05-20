@@ -15,11 +15,6 @@ const (
 	DELETE = "DELETE"
 )
 
-type ResultStatus struct {
-	StatusCode int
-	Header     interface{}
-}
-
 func SendRequest(method string, url string, XAuthToken string, payloadMap interface{}, result interface{}) (response *http.Response, err error) {
 	client := http.Client{}
 	var request *http.Request
