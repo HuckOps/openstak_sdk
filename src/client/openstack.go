@@ -65,6 +65,9 @@ type Auth struct {
 	} `json:"token"`
 }
 
+// 创建OpenStack客户端，进行认证
+// 本函数抛出panic("Auth Failed")可能情况为主机不可达或者密码或clouds.yaml文件配置错误
+// OpenStack的Token为有期限Token，不可一次申请全局使用，建议调用之前重新声明可独断
 func NewOpenStackClient(config string, password string) (openstackClient OpenStackClient, err error) {
 	configfile, err := ioutil.ReadFile(config)
 	if err != nil {
@@ -134,6 +137,8 @@ func NewOpenStackClient(config string, password string) (openstackClient OpenSta
 	return
 }
 
+// 客户端有效性认证，验证Token是否超期
+// 本函数抛出panic("Auth Failed")可能情况为主机不可达
 func (openstackClient OpenStackClient) CheckToken() bool {
 	payload := map[string]interface{}{}
 	result, err := api_request.SendRequest(api_request.GET, openstackClient.Identity+"/auth/tokens", openstackClient.Token, payload, nil)
