@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"openstack_sdk/pkg/api_request"
 	"strings"
@@ -76,6 +75,7 @@ func NewOpenStackClient(config string, password string) (openstackClient OpenSta
 		return
 	}
 	client := http.Client{}
+	client.Timeout = time.Second * 10
 	payloadMap := map[string]interface{}{
 		"auth": map[string]interface{}{
 			"identity": map[string]interface{}{
@@ -102,8 +102,9 @@ func NewOpenStackClient(config string, password string) (openstackClient OpenSta
 		return
 	}
 	result, err := client.Do(request)
+	fmt.Println(err.Error())
 	if err != nil || result.StatusCode != 201 {
-		err = errors.New("Auth failed")
+		panic("Auth Failed")
 		return
 	}
 	response, err := ioutil.ReadAll(result.Body)
@@ -135,8 +136,8 @@ func NewOpenStackClient(config string, password string) (openstackClient OpenSta
 
 func (openstackClient OpenStackClient) CheckToken() bool {
 	payload := map[string]interface{}{}
-	result, _ := api_request.SendRequest(api_request.GET, openstackClient.Identity+"/auth/tokens", openstackClient.Token, payload, nil)
-	if result.StatusCode != 200 {
+	result, err := api_request.SendRequest(api_request.GET, openstackClient.Identity+"/auth/tokens", openstackClient.Token, payload, nil)
+	if err != nil || result.StatusCode != 200 {
 		panic("Auth Failed")
 	}
 	return true
