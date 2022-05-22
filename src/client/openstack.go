@@ -105,7 +105,6 @@ func NewOpenStackClient(config string, password string) (openstackClient OpenSta
 		return
 	}
 	result, err := client.Do(request)
-	fmt.Println(err.Error())
 	if err != nil || result.StatusCode != 201 {
 		panic("Auth Failed")
 		return
@@ -146,4 +145,12 @@ func (openstackClient OpenStackClient) CheckToken() bool {
 		panic("Auth Failed")
 	}
 	return true
+}
+
+// 关闭openstack客户端，token失效，防止token泄露
+func (openstackClient *OpenStackClient) Close() {
+	result, err := api_request.SendRequest(api_request.DELETE, openstackClient.Identity+"/auth/tokens", openstackClient.Token, map[string]interface{}{}, nil)
+	if err != nil || result.StatusCode != 204 {
+		fmt.Println("关闭客户端失败")
+	}
 }
